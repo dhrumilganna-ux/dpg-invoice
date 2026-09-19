@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPG Advisors — Invoice Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#111;--paper:#f7f5f0;--white:#fff;--rule:#d4cfc6;--soft:#eceae4;--muted:#777;--fs:13px;}
+body{font-family:'IBM Plex Sans',sans-serif;font-size:var(--fs);background:var(--paper);color:var(--ink);min-height:100vh}
+
+nav{background:var(--ink);color:var(--white);display:flex;align-items:center;padding:0 28px;height:52px;position:sticky;top:0;z-index:100}
+.nav-brand{font-family:'IBM Plex Serif',serif;font-size:16px;font-weight:600;letter-spacing:-.3px;margin-right:32px}
+.nav-brand span{font-style:italic;font-weight:400}
+.nav-btn{padding:8px 18px;font-size:12px;font-weight:500;color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;letter-spacing:.3px;text-transform:uppercase;border-bottom:2px solid transparent;height:52px;transition:all .2s}
+.nav-btn.active,.nav-btn:hover{color:#fff;border-bottom-color:#fff}
+.nav-badge{background:#fff;color:var(--ink);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px}
+.nav-saved{margin-left:auto;font-size:11px;color:rgba(255,255,255,0);transition:color .4s}
+.nav-saved.show{color:rgba(255,255,255,.6)}
+.nav-tool-btn{padding:5px 12px;font-size:11px;font-weight:500;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;letter-spacing:.2px}
+.nav-tool-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+
+.page{display:none;padding:28px}.page.active{display:block}
+
+.form-wrap{display:grid;grid-template-columns:1fr 400px;gap:24px;max-width:1080px}
+.section-card{background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:22px;margin-bottom:14px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--soft)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+.span-2{grid-column:span 2}.span-3{grid-column:span 3}
+.fld{display:flex;flex-direction:column;gap:4px}
+label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{border:1px solid var(--rule);border-radius:5px;padding:8px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;background:var(--paper);color:var(--ink);outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);background:var(--white)}
+textarea{resize:vertical;min-height:58px}
+
+.item-grid{display:grid;grid-template-columns:1fr 110px 28px;gap:6px;align-items:center;margin-bottom:6px}
+.item-hd{display:grid;grid-template-columns:1fr 110px 28px;gap:6px;margin-bottom:5px}
+.item-hd span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.tax-grid{display:grid;grid-template-columns:1fr 80px 100px 28px;gap:6px;align-items:center;margin-bottom:6px}
+.tax-hd{display:grid;grid-template-columns:1fr 80px 100px 28px;gap:6px;margin-bottom:5px}
+.tax-hd span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.btn-rm{width:28px;height:28px;border:1px solid var(--rule);background:none;border-radius:4px;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.btn-rm:hover{border-color:#c00;color:#c00}
+.btn-add-row{background:none;border:1px dashed var(--rule);border-radius:5px;padding:7px;font-size:12px;color:var(--muted);cursor:pointer;width:100%;font-family:'IBM Plex Sans',sans-serif;margin-top:4px;transition:all .15s}
+.btn-add-row:hover{border-color:var(--ink);color:var(--ink)}
+
+.totals-box{background:var(--soft);border:1px solid var(--rule);border-radius:6px;padding:13px;margin-top:13px}
+.tot-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dashed var(--rule)}
+.tot-row:last-child{border-bottom:none;margin-top:6px;padding-top:8px;font-weight:600;font-size:15px}
+.tot-val{font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+.btn{padding:10px 22px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;border:none}
+.btn-primary{background:var(--ink);color:#fff}.btn-primary:hover{background:#333}
+.btn-outline{background:none;border:1px solid var(--rule);color:var(--ink)}.btn-outline:hover{border-color:var(--ink)}
+.btn-danger{background:none;border:1px solid #e0c0c0;color:#b00;font-size:12px;padding:6px 12px;border-radius:4px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s}
+.btn-danger:hover{background:#fff0f0;border-color:#b00}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+
+.preview-sticky{position:sticky;top:66px}
+.preview-card{background:var(--white);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.preview-toolbar{padding:11px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;background:var(--soft)}
+.preview-toolbar span{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.preview-inner{padding:14px;max-height:calc(100vh - 155px);overflow-y:auto}
+
+/* invoice template */
+.inv{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:#000;line-height:1.45;background:#fff;padding:20px 22px}
+.inv *{color:#000!important}
+.inv-ti{text-align:center;font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:10px;text-decoration:underline;text-underline-offset:3px}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #000}
+.inv-firm-name{font-size:16px;font-weight:700;letter-spacing:-.3px;margin-bottom:3px}
+.inv-firm-detail{font-size:9.5px;line-height:1.6}
+.inv-meta{text-align:right}
+.inv-meta .inv-num{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.inv-meta .inv-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:1px;margin-top:6px}
+.inv-bill{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #ccc}
+.inv-bill-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.inv-bill-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.inv-bill-det{font-size:9px;line-height:1.6}
+table.inv-tbl{width:100%;border-collapse:collapse}
+table.inv-tbl th{background:#000;color:#fff!important;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;text-align:left}
+table.inv-tbl th:last-child{text-align:right}
+table.inv-tbl td{padding:7px 8px;font-size:10.5px;border-bottom:1px solid #e8e8e8}
+table.inv-tbl td:first-child{text-align:center;font-size:10px;width:28px}
+table.inv-tbl td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10.5px}
+table.inv-tbl tr.tax-row td{font-weight:600;border-bottom:none;border-top:1px solid #ccc}
+table.inv-tbl tr.tax-row td:nth-child(2){text-align:right}
+.inv-grand{background:#000;display:flex;justify-content:space-between;align-items:center;padding:8px 10px}
+.inv-grand *{color:#fff!important}
+.inv-grand .gl{font-size:11px;font-weight:700;letter-spacing:.3px}
+.inv-grand .gv{font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.inv-words{margin:8px 0 10px;font-size:9.5px}
+.inv-words strong{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.inv-words .wv{font-weight:700}
+.inv-footer{display:grid;grid-template-columns:1fr 1fr;border:1px solid #ccc;margin-top:4px}
+.inv-footer-col{padding:10px 12px}
+.inv-footer-col:first-child{border-right:1px solid #ccc}
+.inv-footer-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.inv-bank-row{display:grid;grid-template-columns:70px 1fr;gap:4px;margin-bottom:3px;font-size:9.5px}
+.inv-bank-row .bk{color:#555}.inv-bank-row .bv{font-weight:700}
+.inv-terms li{font-size:9.5px;margin-bottom:3px;margin-left:14px}
+.inv-sig{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;padding-top:8px;border-top:1px solid #ccc;font-size:9px}
+.inv-sig-right{font-weight:700;font-size:10px}
+
+/* summary */
+.sum-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:16px 20px}
+.stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:5px}
+.stat-val{font-size:22px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.inv-table-wrap{background:var(--white);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+table.sum-tbl{width:100%;border-collapse:collapse}
+table.sum-tbl thead tr{background:var(--ink)}
+table.sum-tbl th{padding:10px 16px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#fff;text-align:left}
+table.sum-tbl td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--soft)}
+table.sum-tbl tr:last-child td{border-bottom:none}
+table.sum-tbl tbody tr:hover td{background:var(--paper)}
+.sum-tbl .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right}
+.sum-tbl .bold{font-weight:600}
+.sum-tbl .actions{text-align:right}
+.inv-no-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600}
+.empty-sum{text-align:center;padding:56px;color:var(--muted)}
+.sum-foot{background:var(--soft);border-top:2px solid var(--ink)}
+.sum-foot td{font-weight:600;font-size:13px;padding:10px 16px}
+
+/* payment status */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-paid{background:#e6f4ec;color:#1a6e3a;border:1px solid #b6dfc6}
+.badge-pending{background:#fff4e5;color:#8a5000;border:1px solid #ffd98a}
+.badge-overdue{background:#fdecea;color:#9c1f1f;border:1px solid #f5b8b8}
+.pay-date-input{border:1px solid var(--rule);border-radius:4px;padding:4px 7px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;background:var(--paper);color:var(--ink);cursor:pointer;width:118px}
+.pay-date-input:focus{border-color:var(--ink);outline:none}
+.pay-clear{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 2px;line-height:1;transition:color .15s}
+.pay-clear:hover{color:#b00}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:6px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1}
+
+/* customer autocomplete */
+.ac-wrap{position:relative}
+.ac-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--white);border:1px solid var(--ink);border-top:none;border-radius:0 0 6px 6px;z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.ac-item{padding:9px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--soft)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.focused{background:var(--soft)}
+.ac-item-name{font-weight:500}
+.ac-item-gst{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.ac-item-del{color:var(--muted);font-size:16px;padding:0 4px;line-height:1;transition:color .15s}
+.ac-item-del:hover{color:#b00}
+.db-badge{font-size:10px;color:var(--muted);margin-left:6px;font-weight:400}
+
+/* Google Drive sync UI */
+.drive-btn{padding:5px 12px;font-size:11px;font-weight:500;border-radius:4px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px;border:none}
+.drive-btn-signin{background:#fff;color:#3c4043;border:1px solid rgba(255,255,255,.3)!important}
+.drive-btn-signin:hover{background:#f0f0f0}
+.drive-btn-signout{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2)!important}
+.drive-btn-signout:hover{background:rgba(255,255,255,.2)}
+.drive-status{font-size:11px;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:6px}
+.drive-dot{width:7px;height:7px;border-radius:50%;background:#888;display:inline-block;flex-shrink:0}
+.drive-dot.connected{background:#4caf50;box-shadow:0 0 5px #4caf5088}
+.drive-dot.syncing{background:#ffb300;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.drive-sync-bar{height:2px;background:linear-gradient(90deg,#4285f4,#34a853,#fbbc04,#ea4335);position:fixed;top:52px;left:0;width:0;transition:width .4s,opacity .4s;z-index:200;opacity:0}
+.drive-sync-bar.active{opacity:1}
+
+@media print{
+  nav,.no-print{display:none!important}
+  body{background:#fff;padding:0}
+  .page{display:none!important}
+  #page-preview{display:block!important;padding:0}
+  .preview-toolbar,.btn-row{display:none!important}
+  .preview-inner{max-height:none!important;overflow:visible;padding:0}
+  .preview-card{border:none!important;border-radius:0;box-shadow:none}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://apis.google.com/js/api.js" async></script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">DPG Advisors <span>LLP</span></div>
+  <button class="nav-btn active" onclick="showPage('form')">New Invoice</button>
+  <button class="nav-btn" onclick="showPage('preview')">Preview</button>
+  <button class="nav-btn" onclick="showPage('summary')">All Invoices <span class="nav-badge" id="inv-badge">0</span></button>
+  <button class="nav-btn" onclick="showPage('customers')">Customers <span class="nav-badge" id="cust-badge"></span></button>
+  <span class="nav-saved" id="nav-saved">&#10003; Saved</span>
+  <div style="display:flex;align-items:center;gap:12px;margin-left:16px">
+    <!-- Drive status / sign-in -->
+    <div id="drive-ui" style="display:flex;align-items:center;gap:8px">
+      <span class="drive-status"><span class="drive-dot" id="drive-dot"></span><span id="drive-status-txt">Not connected</span></span>
+      <button class="drive-btn drive-btn-signin" id="drive-signin-btn" onclick="driveSignIn()" style="display:flex">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+      <div id="drive-signed-in" style="display:none;align-items:center;gap:8px">
+        <span id="drive-user" style="font-size:11px;color:rgba(255,255,255,.6)"></span>
+        <button class="drive-btn drive-btn-signout" onclick="driveSyncNow()" id="drive-sync-btn">&#8645; Sync now</button>
+        <button class="drive-btn drive-btn-signout" onclick="driveSignOut()">Sign out</button>
+      </div>
+    </div>
+    <!-- Backup / Restore -->
+    <div style="display:flex;gap:6px">
+      <button class="nav-tool-btn" onclick="backupData()">&#8659; Backup</button>
+      <label class="nav-tool-btn" style="cursor:pointer">&#8657; Restore<input type="file" accept=".json" onchange="restoreData(event)" style="display:none"></label>
+    </div>
+  </div>
+</nav>
+<div class="drive-sync-bar" id="sync-bar"></div>
+
+<!-- FORM -->
+<div class="page active" id="page-form">
+<div class="form-wrap">
+  <div>
+    <div class="section-card">
+      <div class="section-title">Your Firm</div>
+      <div class="grid-2">
+        <div class="fld span-2"><label>Firm Name</label><input id="f-firm" value="DPG ADVISORS LLP" oninput="renderLive()"></div>
+        <div class="fld span-2"><label>Address</label><input id="f-addr" value="18, 5/7, Kalbadevi Chambers, Kalbadevi, Mumbai – 400002" oninput="renderLive()"></div>
+        <div class="fld"><label>State</label><input id="f-state" value="Maharashtra" oninput="renderLive()"></div>
+        <div class="fld"><label>State Code</label><input id="f-code" value="27" oninput="renderLive()"></div>
+        <div class="fld"><label>Email</label><input id="f-email" value="dhrumilpganna@gmail.com" oninput="renderLive()"></div>
+        <div class="fld"><label>PAN</label><input id="f-pan" value="AAMFH9959B" oninput="renderLive()"></div>
+        <div class="fld span-2"><label>GST No.</label><input id="f-gst" value="27AAMFH9959B1ZX" oninput="renderLive()"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Invoice Details</div>
+      <div class="grid-3">
+        <div class="fld"><label>Invoice No.</label><input id="f-invno" value="PI 8" oninput="renderLive()"></div>
+        <div class="fld"><label>Date</label><input type="date" id="f-date" oninput="renderLive()"></div>
+        <div class="fld"><label>Due Date</label><input type="date" id="f-due" oninput="renderLive()"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Billed To</div>
+      <div class="grid-2">
+        <div class="fld span-2">
+          <label>Customer Name <span class="db-badge" id="db-count-lbl"></span></label>
+          <div class="ac-wrap">
+            <input id="c-name" value="Palai Developments Private Limited" oninput="onCustomerType()" onkeydown="onCustomerKey(event)" autocomplete="off" placeholder="Type to search or add new…">
+            <div class="ac-dropdown" id="ac-dropdown" style="display:none"></div>
+          </div>
+        </div>
+        <div class="fld span-2"><label>Address</label><textarea id="c-addr" oninput="renderLive()">303, Palai Complex, Bhandarkar Road, Matunga C.R., Mumbai – 400019</textarea></div>
+        <div class="fld"><label>GSTIN / UIN</label><input id="c-gst" value="27AAHFN5127A1ZM" oninput="renderLive()"></div>
+        <div class="fld"><label>State</label><input id="c-state" value="Maharashtra" oninput="renderLive()"></div>
+        <div class="fld"><label>State Code</label><input id="c-code" value="27" oninput="renderLive()"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Line Items</div>
+      <div class="item-hd"><span>Description</span><span>Amount (Rs.)</span><span></span></div>
+      <div id="item-rows"></div>
+      <button class="btn-add-row" onclick="addItem()">+ Add line item</button>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Taxes &amp; Charges</div>
+      <div class="tax-hd"><span>Name</span><span>Rate / Amt</span><span>Type</span><span></span></div>
+      <div id="tax-rows"></div>
+      <button class="btn-add-row" onclick="addTax()">+ Add tax / charge</button>
+      <div class="totals-box" id="totals-box"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Bank Details</div>
+      <div class="grid-3">
+        <div class="fld span-3"><label>Bank &amp; Branch</label><input id="b-name" value="Yes Bank Ltd, Sion" oninput="renderLive()"></div>
+        <div class="fld" style="grid-column:span 2"><label>Account No.</label><input id="b-acc" value="034563700000540" oninput="renderLive()"></div>
+        <div class="fld"><label>IFSC Code</label><input id="b-ifsc" value="YESB0000345" oninput="renderLive()"></div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="section-title">Terms &amp; Conditions</div>
+        <textarea id="f-terms" oninput="renderLive()">1. Payment within 7 days.
+2. Cheque/DD should be made in favour of "DPG ADVISORS LLP".
+3. Subject to Mumbai Jurisdiction only.</textarea>
+      </div>
+    </div>
+
+    <div class="btn-row no-print">
+      <button class="btn btn-primary" onclick="saveAndPreview()">Save &amp; Preview Invoice</button>
+      <button class="btn btn-outline" onclick="newInvoice()">New Invoice</button>
+    </div>
+  </div>
+
+  <div class="preview-sticky">
+    <div class="preview-card">
+      <div class="preview-toolbar">
+        <span>Live preview</span>
+        <button class="btn btn-outline btn-sm" onclick="saveAndPreview();showPage('preview')">Full View →</button>
+      </div>
+      <div class="preview-inner" id="live-preview"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PREVIEW -->
+<div class="page" id="page-preview">
+  <div style="max-width:740px;margin:0 auto">
+    <div class="btn-row no-print" style="margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="showPage('form')">← Edit</button>
+      <button class="btn btn-primary btn-sm" onclick="window.print()">Print / Save PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="showPage('summary')" style="margin-left:auto">All Invoices →</button>
+    </div>
+    <div class="preview-card"><div class="preview-inner" style="max-height:none" id="preview-full"></div></div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="page" id="page-summary">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div style="font-family:'IBM Plex Serif',serif;font-size:18px;font-weight:600">Invoice Summary</div>
+    <button class="btn btn-primary btn-sm no-print" onclick="exportExcel()" style="display:flex;align-items:center;gap:7px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export to Excel
+    </button>
+  </div>
+  <div class="sum-stats" style="grid-template-columns:repeat(6,1fr)">
+    <div class="stat"><div class="stat-lbl">Total Invoices</div><div class="stat-val" id="s-count">0</div><div class="stat-sub">saved in browser</div></div>
+    <div class="stat"><div class="stat-lbl">Total Billed</div><div class="stat-val" id="s-billed">₹0</div><div class="stat-sub">grand total</div></div>
+    <div class="stat"><div class="stat-lbl">Total Tax</div><div class="stat-val" id="s-tax">₹0</div><div class="stat-sub">CGST + SGST</div></div>
+    <div class="stat"><div class="stat-lbl">Subtotal</div><div class="stat-val" id="s-sub">₹0</div><div class="stat-sub">before tax</div></div>
+    <div class="stat" style="border-color:#b6dfc6;background:#f5fbf7"><div class="stat-lbl" style="color:#1a6e3a">Received</div><div class="stat-val" id="s-paid" style="color:#1a6e3a">₹0</div><div class="stat-sub" id="s-paid-ct">0 invoices</div></div>
+    <div class="stat" style="border-color:#ffd98a;background:#fffbf2"><div class="stat-lbl" style="color:#8a5000">Outstanding</div><div class="stat-val" id="s-outstanding" style="color:#8a5000">₹0</div><div class="stat-sub" id="s-out-ct">0 invoices</div></div>
+  </div>
+  <div class="inv-table-wrap">
+    <table class="sum-tbl">
+      <thead><tr>
+        <th>Inv No.</th><th>Customer</th><th>Inv Date</th>
+        <th style="text-align:right">Subtotal</th>
+        <th style="text-align:right">Tax</th>
+        <th style="text-align:right">Grand Total</th>
+        <th>Status</th>
+        <th>Payment Date</th>
+        <th class="no-print" style="text-align:right">Actions</th>
+      </tr></thead>
+      <tbody id="sum-body"></tbody>
+      <tfoot><tr class="sum-foot" id="sum-foot"></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div style="font-family:'IBM Plex Serif',serif;font-size:18px;font-weight:600">Customer Database</div>
+    <button class="btn btn-outline btn-sm" onclick="showPage('form')">← Back to Invoice</button>
+  </div>
+  <div class="inv-table-wrap">
+    <table class="sum-tbl">
+      <thead><tr>
+        <th>Customer Name</th><th>GSTIN / UIN</th><th>State</th><th>Address</th><th style="text-align:right" class="no-print">Actions</th>
+      </tr></thead>
+      <tbody id="cust-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LS_KEY='dpg_invoices_v2';
+const LS_FIRM='dpg_firm_v2';
+const LS_CUSTOMERS='dpg_customers_v1';
+
+function lsLoad(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast('Storage full – clear old invoices');}}
+
+let invoices=lsLoad(LS_KEY)||[];
+let customerDB=lsLoad(LS_CUSTOMERS)||[
+  {name:'Palai Developments Private Limited',gst:'27AAHFN5127A1ZM',state:'Maharashtra',code:'27',addr:'303, Palai Complex, Bhandarkar Road, Matunga C.R., Mumbai – 400019'}
+];
+
+/* ── Customer DB helpers ── */
+function saveCustomerDB(){lsSave(LS_CUSTOMERS,customerDB);}
+
+function upsertCustomer(rec){
+  const idx=customerDB.findIndex(c=>c.name.toLowerCase()===rec.name.toLowerCase());
+  if(idx>=0) customerDB[idx]={...customerDB[idx],...rec};
+  else customerDB.push(rec);
+  saveCustomerDB();
+  updateCustBadge();
+}
+
+function deleteCustomer(idx){
+  customerDB.splice(idx,1);
+  saveCustomerDB();
+  updateCustBadge();
+  renderCustomers();
+}
+
+function updateCustBadge(){
+  const b=document.getElementById('cust-badge');
+  b.textContent=customerDB.length||'';
+  const lbl=document.getElementById('db-count-lbl');
+  if(lbl) lbl.textContent=customerDB.length?'('+customerDB.length+' saved)':'';
+}
+
+/* ── Autocomplete ── */
+let acFocusIdx=-1;
+
+function onCustomerType(){
+  renderLive();
+  const q=document.getElementById('c-name').value.trim().toLowerCase();
+  const dd=document.getElementById('ac-dropdown');
+  if(!q){dd.style.display='none';return;}
+  const matches=customerDB.filter(c=>c.name.toLowerCase().includes(q));
+  if(!matches.length){dd.style.display='none';return;}
+  acFocusIdx=-1;
+  dd.innerHTML=matches.map((c,i)=>`
+    <div class="ac-item" data-idx="${i}" onmousedown="selectCustomer('${escQ(c.name)}')" onmouseover="acHover(${i})">
+      <div><div class="ac-item-name">${c.name}</div><div class="ac-item-gst">${c.gst||'No GST saved'}</div></div>
+    </div>`).join('');
+  dd.style.display='block';
+}
+
+function escQ(s){return s.replace(/'/g,"\\'");}
+
+function onCustomerKey(e){
+  const dd=document.getElementById('ac-dropdown');
+  const items=[...dd.querySelectorAll('.ac-item')];
+  if(e.key==='ArrowDown'){e.preventDefault();acFocusIdx=Math.min(acFocusIdx+1,items.length-1);acHighlight(items);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acFocusIdx=Math.max(acFocusIdx-1,0);acHighlight(items);}
+  else if(e.key==='Enter'&&acFocusIdx>=0&&items.length){e.preventDefault();items[acFocusIdx].dispatchEvent(new MouseEvent('mousedown'));}
+  else if(e.key==='Escape'){dd.style.display='none';}
+}
+
+function acHighlight(items){
+  items.forEach((el,i)=>el.classList.toggle('focused',i===acFocusIdx));
+  if(items[acFocusIdx])items[acFocusIdx].scrollIntoView({block:'nearest'});
+}
+function acHover(i){acFocusIdx=i;}
+
+function selectCustomer(name){
+  const c=customerDB.find(x=>x.name===name);
+  if(!c)return;
+  document.getElementById('c-name').value=c.name;
+  document.getElementById('c-addr').value=c.addr||'';
+  document.getElementById('c-gst').value=c.gst||'';
+  document.getElementById('c-state').value=c.state||'Maharashtra';
+  document.getElementById('c-code').value=c.code||'27';
+  document.getElementById('ac-dropdown').style.display='none';
+  recalc();
+  toast('Customer loaded: '+c.name);
+}
+
+// Close dropdown on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ac-wrap'))
+    document.getElementById('ac-dropdown').style.display='none';
+});
+
+/* ── Render customers page ── */
+function renderCustomers(){
+  updateCustBadge();
+  const tbody=document.getElementById('cust-body');
+  if(!customerDB.length){
+    tbody.innerHTML=`<tr><td colspan="5" class="empty-sum">No customers saved yet. They are added automatically when you save an invoice.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=customerDB.map((c,i)=>`
+    <tr>
+      <td style="font-weight:500">${c.name}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${c.gst||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${c.state||'—'} ${c.code?'('+c.code+')':''}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:260px">${(c.addr||'—').replace(/\n/g,', ')}</td>
+      <td class="actions no-print">
+        <button class="btn btn-outline btn-sm" onclick="loadCustomerToForm(${i})">Use</button>
+        <button class="btn-danger" onclick="deleteCustomer(${i})">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+function loadCustomerToForm(i){
+  selectCustomer(customerDB[i].name);
+  showPage('form');
+}
+
+function g(id){return document.getElementById(id).value;}
+
+function fmtINR(n){
+  n=Math.round(n);const s=String(n);
+  if(s.length<=3)return s;
+  const l3=s.slice(-3);let rest=s.slice(0,-3);
+  const parts=[];
+  while(rest.length>2){parts.unshift(rest.slice(-2));rest=rest.slice(0,-2);}
+  if(rest)parts.unshift(rest);
+  return parts.join(',')+','+l3;
+}
+
+function numWords(n){
+  const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+    'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  if(n===0)return 'Zero';
+  function w(n){
+    if(n<20)return a[n];
+    if(n<100)return b[Math.floor(n/10)]+(n%10?' '+a[n%10]:'');
+    if(n<1000)return a[Math.floor(n/100)]+' Hundred'+(n%100?' '+w(n%100):'');
+    if(n<100000)return w(Math.floor(n/1000))+' Thousand'+(n%1000?' '+w(n%1000):'');
+    if(n<10000000)return w(Math.floor(n/100000))+' Lakh'+(n%100000?' '+w(n%100000):'');
+    return w(Math.floor(n/10000000))+' Crore'+(n%10000000?' '+w(n%10000000):'');
+  }
+  return w(n);
+}
+
+function fmtDate(d){if(!d)return '';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function fmtDateDisp(d){
+  if(!d)return '—';
+  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p=d.split('-');return p[2]+' '+mo[+p[1]-1]+' '+p[0];
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+function flashSaved(){
+  const el=document.getElementById('nav-saved');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+/* ── Items (no quantity) ── */
+function addItem(desc='',amt=''){
+  const d=document.createElement('div');d.className='item-grid';
+  d.innerHTML=`
+    <input placeholder="Service / description" value="${String(desc).replace(/"/g,'&quot;')}" oninput="recalc()">
+    <input type="number" placeholder="0.00" value="${amt}" min="0" step="any" oninput="recalc()" style="text-align:right;font-family:'IBM Plex Mono',monospace">
+    <button class="btn-rm" onclick="this.parentElement.remove();recalc()">×</button>`;
+  document.getElementById('item-rows').appendChild(d);recalc();
+}
+
+function addTax(name='',rate='',type='%'){
+  const d=document.createElement('div');d.className='tax-grid';
+  d.innerHTML=`
+    <input placeholder="e.g. CGST" value="${String(name).replace(/"/g,'&quot;')}" oninput="recalc()">
+    <input type="number" placeholder="9" value="${rate}" min="0" step="any" oninput="recalc()" style="text-align:right">
+    <select oninput="recalc()">
+      <option value="%" ${type==='%'?'selected':''}>% of subtotal</option>
+      <option value="flat" ${type==='flat'?'selected':''}>Flat ₹</option>
+    </select>
+    <button class="btn-rm" onclick="this.parentElement.remove();recalc()">×</button>`;
+  document.getElementById('tax-rows').appendChild(d);recalc();
+}
+
+function getItems(){
+  return [...document.getElementById('item-rows').children].map(r=>{
+    const ins=r.querySelectorAll('input');
+    return{desc:ins[0].value,amt:parseFloat(ins[1].value)||0};
+  });
+}
+function getTaxes(){
+  return [...document.getElementById('tax-rows').children].map(r=>{
+    const ins=r.querySelectorAll('input');const sel=r.querySelector('select');
+    return{name:ins[0].value,rate:parseFloat(ins[1].value)||0,type:sel.value};
+  });
+}
+
+function recalc(){
+  const items=getItems();
+  const sub=items.reduce((s,i)=>s+i.amt,0);
+  const taxes=getTaxes();
+  let taxTot=0;
+  const taxLines=taxes.filter(t=>t.name).map(t=>{
+    const amt=t.type==='%'?sub*t.rate/100:t.rate;taxTot+=amt;
+    return`<div class="tot-row"><span>${t.name}${t.type==='%'?' ('+t.rate+'%)':''}</span><span class="tot-val">₹${fmtINR(amt)}</span></div>`;
+  }).join('');
+  const grand=sub+taxTot;
+  document.getElementById('totals-box').innerHTML=`
+    <div class="tot-row"><span>Subtotal</span><span class="tot-val">₹${fmtINR(sub)}</span></div>
+    ${taxLines}
+    <div class="tot-row"><span>Grand Total</span><span class="tot-val">₹${fmtINR(grand)}</span></div>`;
+  renderLive();
+}
+
+function collectData(){
+  const items=getItems();
+  const taxes=getTaxes();
+  const sub=items.reduce((s,i)=>s+i.amt,0);
+  let taxTot=0;
+  const taxDetails=taxes.filter(t=>t.name).map(t=>{
+    const amt=t.type==='%'?sub*t.rate/100:t.rate;taxTot+=amt;
+    return{name:t.name,rate:t.rate,type:t.type,amt};
+  });
+  const grand=sub+taxTot;
+  return{
+    firm:g('f-firm'),addr:g('f-addr'),state:g('f-state'),code:g('f-code'),
+    email:g('f-email'),pan:g('f-pan'),gst:g('f-gst'),
+    invno:g('f-invno'),date:g('f-date'),due:g('f-due'),
+    cname:g('c-name'),caddr:g('c-addr'),cgst:g('c-gst'),
+    cstate:g('c-state'),ccode:g('c-code'),
+    bank:g('b-name'),acc:g('b-acc'),ifsc:g('b-ifsc'),
+    terms:g('f-terms'),
+    items,taxes:taxDetails,sub,taxTot,grand,
+    savedAt:new Date().toISOString()
+  };
+}
+
+function buildInvoiceHTML(d){
+  const words=numWords(Math.round(d.grand)).toUpperCase()+' ONLY';
+  const itemRows=d.items.map((it,i)=>`
+    <tr><td>${i+1}</td><td>${it.desc||'—'}</td><td>₹${fmtINR(it.amt)}</td></tr>`).join('');
+  const taxRows=d.taxes.map(t=>`
+    <tr class="tax-row"><td></td>
+    <td style="text-align:right;font-weight:700">${t.name}${t.type==='%'?' @ '+t.rate+'%':''}</td>
+    <td>₹${fmtINR(t.amt)}</td></tr>`).join('');
+  const termsList=d.terms.split('\n').filter(Boolean)
+    .map(t=>`<li>${t.replace(/^\d+\.\s*/,'')}</li>`).join('');
+  return`<div class="inv">
+  <div class="inv-ti">TAX INVOICE</div>
+  <div class="inv-header">
+    <div>
+      <div class="inv-firm-name">${d.firm}</div>
+      <div class="inv-firm-detail">${d.addr}<br>State: ${d.state} | Code: ${d.code} | ${d.email}<br><strong>PAN:</strong> ${d.pan}&nbsp;&nbsp;<strong>GST:</strong> ${d.gst}</div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-lbl">Invoice No.</div>
+      <div class="inv-num">${d.invno}</div>
+      <div class="inv-lbl">Date</div>
+      <div style="font-size:11px;font-weight:700">${fmtDate(d.date)}</div>
+      ${d.due?`<div class="inv-lbl">Due Date</div><div style="font-size:11px;font-weight:600">${fmtDate(d.due)}</div>`:''}
+    </div>
+  </div>
+  <div class="inv-bill">
+    <div class="inv-bill-lbl">Billed To</div>
+    <div class="inv-bill-name">${d.cname}</div>
+    <div class="inv-bill-det">${d.caddr.replace(/\n/g,'<br>')}<br><strong>GSTIN/UIN:</strong> ${d.cgst}<br>State: ${d.cstate} | Code: ${d.ccode}</div>
+  </div>
+  <table class="inv-tbl">
+    <thead><tr><th style="width:28px">No.</th><th>Particulars</th><th style="width:100px">Amount (Rs.)</th></tr></thead>
+    <tbody>${itemRows}${taxRows}</tbody>
+  </table>
+  <div class="inv-grand"><span class="gl">Grand Total</span><span class="gv">Rs. ${fmtINR(d.grand)}</span></div>
+  <div class="inv-words"><strong>Amount Chargeable (In Words)</strong><span class="wv">INR ${words}</span></div>
+  <div class="inv-footer">
+    <div class="inv-footer-col">
+      <div class="inv-footer-lbl">Bank Details for NEFT / RTGS / IMPS</div>
+      <div class="inv-bank-row"><span class="bk">Bank &amp; Branch</span><span class="bv">${d.bank}</span></div>
+      <div class="inv-bank-row"><span class="bk">Account No.</span><span class="bv">${d.acc}</span></div>
+      <div class="inv-bank-row"><span class="bk">IFSC Code</span><span class="bv">${d.ifsc}</span></div>
+    </div>
+    <div class="inv-footer-col">
+      <div class="inv-footer-lbl">Terms &amp; Conditions</div>
+      <ul class="inv-terms">${termsList}</ul>
+    </div>
+  </div>
+  <div class="inv-sig">
+    <span>This is a computer generated invoice. Signature not required.</span>
+    <span class="inv-sig-right">Authorised Signatory</span>
+  </div>
+</div>`;
+}
+
+function renderLive(){
+  try{document.getElementById('live-preview').innerHTML=buildInvoiceHTML(collectData());}catch(e){}
+}
+
+function saveAndPreview(){
+  if(!g('c-name').trim()){toast('Please enter customer name');return;}
+  const d=collectData();
+  // Save firm defaults for next time
+  lsSave(LS_FIRM,{firm:d.firm,addr:d.addr,state:d.state,code:d.code,
+    email:d.email,pan:d.pan,gst:d.gst,bank:d.bank,acc:d.acc,ifsc:d.ifsc,terms:d.terms});
+  // Upsert by invoice number
+  const idx=invoices.findIndex(i=>i.invno===d.invno);
+  if(idx>=0){invoices[idx]=d;toast('Invoice '+d.invno+' updated');}
+  else{invoices.push(d);toast('Invoice '+d.invno+' saved ✓');}
+  lsSave(LS_KEY,invoices);
+  scheduleSync();
+  // Auto-save customer to DB
+  if(d.cname.trim()){
+    upsertCustomer({name:d.cname,gst:d.cgst,state:d.cstate,code:d.ccode,addr:d.caddr});
+  }
+  flashSaved();
+  updateBadge();
+  document.getElementById('preview-full').innerHTML=buildInvoiceHTML(d);
+}
+
+function updateBadge(){document.getElementById('inv-badge').textContent=invoices.length||'';}
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-btn')[{form:0,preview:1,summary:2,customers:3}[p]]?.classList.add('active');
+  if(p==='summary')renderSummary();
+  if(p==='customers')renderCustomers();
+}
+
+function renderSummary(){
+  const n=invoices.length;
+  const totBilled=invoices.reduce((s,i)=>s+i.grand,0);
+  const totTax=invoices.reduce((s,i)=>s+i.taxTot,0);
+  const totSub=invoices.reduce((s,i)=>s+i.sub,0);
+  const paidInvs=invoices.filter(i=>i.payDate);
+  const totPaid=paidInvs.reduce((s,i)=>s+i.grand,0);
+  const totOut=totBilled-totPaid;
+  document.getElementById('s-count').textContent=n;
+  document.getElementById('s-billed').textContent='₹'+fmtINR(totBilled);
+  document.getElementById('s-tax').textContent='₹'+fmtINR(totTax);
+  document.getElementById('s-sub').textContent='₹'+fmtINR(totSub);
+  document.getElementById('s-paid').textContent='₹'+fmtINR(totPaid);
+  document.getElementById('s-paid-ct').textContent=paidInvs.length+' invoice'+(paidInvs.length!==1?'s':'');
+  document.getElementById('s-outstanding').textContent='₹'+fmtINR(totOut);
+  document.getElementById('s-out-ct').textContent=(n-paidInvs.length)+' invoice'+((n-paidInvs.length)!==1?'s':'');
+  const tbody=document.getElementById('sum-body');
+  if(!n){
+    tbody.innerHTML=`<tr><td colspan="9" class="empty-sum">No invoices yet — generate your first one.</td></tr>`;
+    document.getElementById('sum-foot').innerHTML='';return;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  tbody.innerHTML=invoices.map((inv,i)=>{
+    const paid=!!inv.payDate;
+    const overdue=!paid&&inv.due&&inv.due<today;
+    const badge=paid
+      ?`<span class="badge badge-paid">&#10003; Paid</span>`
+      :overdue
+        ?`<span class="badge badge-overdue">&#9888; Overdue</span>`
+        :`<span class="badge badge-pending">&#9679; Pending</span>`;
+    const payCell=paid
+      ?`<div style="display:flex;align-items:center;gap:5px">
+          <input type="date" class="pay-date-input" value="${inv.payDate}" onchange="setPayDate(${i},this.value)">
+          <button class="pay-clear" title="Clear payment date" onclick="setPayDate(${i},'')">&#x2715;</button>
+        </div>`
+      :`<input type="date" class="pay-date-input" placeholder="Set date…" onchange="setPayDate(${i},this.value)">`;
+    return`<tr style="${paid?'background:#f8fdf9':''}">
+      <td class="inv-no-cell">${inv.invno}</td>
+      <td>${inv.cname}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDateDisp(inv.date)}</td>
+      <td class="mono">₹${fmtINR(inv.sub)}</td>
+      <td class="mono">₹${fmtINR(inv.taxTot)}</td>
+      <td class="mono bold">₹${fmtINR(inv.grand)}</td>
+      <td>${badge}</td>
+      <td>${payCell}</td>
+      <td class="actions no-print">
+        <button class="btn btn-outline btn-sm" onclick="viewInv(${i})">View</button>
+        <button class="btn btn-outline btn-sm" onclick="editInv(${i})">Edit</button>
+        <button class="btn-danger" onclick="deleteInv(${i})">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sum-foot').innerHTML=`
+    <td colspan="3" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Total — ${n} invoice${n!==1?'s':''}</td>
+    <td class="mono">₹${fmtINR(totSub)}</td>
+    <td class="mono">₹${fmtINR(totTax)}</td>
+    <td class="mono bold">₹${fmtINR(totBilled)}</td>
+    <td></td><td></td><td class="no-print"></td>`;
+}
+
+function viewInv(i){
+  document.getElementById('preview-full').innerHTML=buildInvoiceHTML(invoices[i]);
+  showPage('preview');
+}
+
+function editInv(i){
+  const d=invoices[i];
+  document.getElementById('f-firm').value=d.firm;
+  document.getElementById('f-addr').value=d.addr;
+  document.getElementById('f-state').value=d.state;
+  document.getElementById('f-code').value=d.code;
+  document.getElementById('f-email').value=d.email;
+  document.getElementById('f-pan').value=d.pan;
+  document.getElementById('f-gst').value=d.gst;
+  document.getElementById('f-invno').value=d.invno;
+  document.getElementById('f-date').value=d.date;
+  document.getElementById('f-due').value=d.due||'';
+  document.getElementById('c-name').value=d.cname;
+  document.getElementById('c-addr').value=d.caddr;
+  document.getElementById('c-gst').value=d.cgst;
+  document.getElementById('c-state').value=d.cstate;
+  document.getElementById('c-code').value=d.ccode;
+  document.getElementById('b-name').value=d.bank;
+  document.getElementById('b-acc').value=d.acc;
+  document.getElementById('b-ifsc').value=d.ifsc;
+  document.getElementById('f-terms').value=d.terms;
+  document.getElementById('item-rows').innerHTML='';
+  document.getElementById('tax-rows').innerHTML='';
+  d.items.forEach(it=>addItem(it.desc,it.amt));
+  d.taxes.forEach(t=>addTax(t.name,t.rate,t.type));
+  recalc();showPage('form');
+}
+
+function deleteInv(i){
+  if(!confirm('Delete invoice '+invoices[i].invno+' for '+invoices[i].cname+'?\nThis cannot be undone.'))return;
+  invoices.splice(i,1);
+  lsSave(LS_KEY,invoices);
+  scheduleSync();
+  updateBadge();renderSummary();
+  toast('Invoice deleted');
+}
+
+function setPayDate(i,date){
+  invoices[i].payDate=date||'';
+  lsSave(LS_KEY,invoices);
+  scheduleSync();
+  flashSaved();
+  renderSummary();
+  if(date) toast('Payment recorded: '+fmtDateDisp(date));
+  else toast('Payment date cleared');
+}
+
+function newInvoice(){
+  document.getElementById('f-invno').value='';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-due').value='';
+  document.getElementById('c-name').value='';
+  document.getElementById('c-addr').value='';
+  document.getElementById('c-gst').value='';
+  document.getElementById('c-state').value='Maharashtra';
+  document.getElementById('c-code').value='27';
+  document.getElementById('item-rows').innerHTML='';
+  document.getElementById('tax-rows').innerHTML='';
+  addItem();addTax('CGST',9,'%');addTax('SGST',9,'%');
+  recalc();window.scrollTo(0,0);
+}
+
+/* ── Backup & Restore ── */
+function backupData(){
+  const payload={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    invoices,
+    customerDB,
+    firm:lsLoad(LS_FIRM)
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='DPG_Backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded ✓');
+}
+
+function restoreData(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.invoices||!Array.isArray(data.invoices))throw new Error('Invalid backup file');
+      const n=data.invoices.length;
+      if(!confirm('This will load '+n+' invoice'+(n!==1?'s':'')+' and '+(data.customerDB?.length||0)+' customers from the backup.\n\nExisting data in this browser will be replaced. Continue?'))return;
+      invoices=data.invoices;
+      lsSave(LS_KEY,invoices);
+      if(data.customerDB){customerDB=data.customerDB;saveCustomerDB();}
+      if(data.firm){lsSave(LS_FIRM,data.firm);}
+      scheduleSync();
+      updateBadge();updateCustBadge();
+      toast('Restored '+n+' invoice'+(n!==1?'s':'')+' ✓');
+      showPage('summary');
+    }catch(err){
+      alert('Could not read backup file.\n'+err.message);
+    }
+    e.target.value=''; // reset file input
+  };
+  reader.readAsText(file);
+}
+
+/* ── Export to Excel ── */
+function exportExcel(){
+  if(!invoices.length){toast('No invoices to export');return;}
+
+  const wb=XLSX.utils.book_new();
+
+  // ── Sheet 1: Summary ──────────────────────────────
+  const summaryRows=[
+    ['DPG ADVISORS LLP — Invoice Summary'],
+    ['Exported on: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})],
+    [],
+    ['Invoice No.','Customer','GSTIN','Date','Due Date','Subtotal (Rs.)','CGST (Rs.)','SGST (Rs.)','Other Tax (Rs.)','Total Tax (Rs.)','Grand Total (Rs.)','Payment Status','Payment Date']
+  ];
+
+  const today2=new Date().toISOString().slice(0,10);
+  invoices.forEach(inv=>{
+    const cgst=inv.taxes.find(t=>t.name.toLowerCase().includes('cgst'));
+    const sgst=inv.taxes.find(t=>t.name.toLowerCase().includes('sgst'));
+    const otherTax=inv.taxes.filter(t=>!t.name.toLowerCase().includes('cgst')&&!t.name.toLowerCase().includes('sgst'))
+      .reduce((s,t)=>s+t.amt,0);
+    const paid=!!inv.payDate;
+    const overdue=!paid&&inv.due&&inv.due<today2;
+    const status=paid?'Paid':overdue?'Overdue':'Pending';
+    summaryRows.push([
+      inv.invno, inv.cname, inv.cgst||'',
+      inv.date?inv.date.split('-').reverse().join('/'):'',
+      inv.due?inv.due.split('-').reverse().join('/'):'',
+      inv.sub,
+      cgst?cgst.amt:0, sgst?sgst.amt:0, otherTax, inv.taxTot, inv.grand,
+      status,
+      inv.payDate?inv.payDate.split('-').reverse().join('/'):'',
+    ]);
+  });
+
+  // Totals row
+  const n=invoices.length;
+  summaryRows.push([]);
+  summaryRows.push([
+    'TOTAL','','','','',
+    invoices.reduce((s,i)=>s+i.sub,0),
+    invoices.reduce((s,i)=>s+(i.taxes.find(t=>t.name.toLowerCase().includes('cgst'))?.amt||0),0),
+    invoices.reduce((s,i)=>s+(i.taxes.find(t=>t.name.toLowerCase().includes('sgst'))?.amt||0),0),
+    invoices.reduce((s,i)=>s+i.taxes.filter(t=>!t.name.toLowerCase().includes('cgst')&&!t.name.toLowerCase().includes('sgst')).reduce((x,t)=>x+t.amt,0),0),
+    invoices.reduce((s,i)=>s+i.taxTot,0),
+    invoices.reduce((s,i)=>s+i.grand,0),
+    invoices.filter(i=>i.payDate).length+' paid / '+(invoices.length-invoices.filter(i=>i.payDate).length)+' pending',
+    ''
+  ]);
+
+  const ws1=XLSX.utils.aoa_to_sheet(summaryRows);
+
+  // Column widths
+  ws1['!cols']=[
+    {wch:12},{wch:38},{wch:20},{wch:12},{wch:12},
+    {wch:16},{wch:14},{wch:14},{wch:16},{wch:16},{wch:18},{wch:14},{wch:14}
+  ];
+
+  // Merge title cells
+  ws1['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:12}},
+    {s:{r:1,c:0},e:{r:1,c:12}}
+  ];
+
+  // Style helpers (SheetJS CE supports limited cell styles)
+  const titleCell=ws1['A1'];
+  if(titleCell){titleCell.s={font:{bold:true,sz:14},alignment:{horizontal:'center'}};}
+
+  XLSX.utils.book_append_sheet(wb,ws1,'Summary');
+
+  // ── Sheet 2: Invoice Details (all line items) ────
+  const detailRows=[
+    ['Invoice No.','Date','Customer','GSTIN','Particulars','Amount (Rs.)']
+  ];
+  invoices.forEach(inv=>{
+    inv.items.forEach((it,idx)=>{
+      detailRows.push([
+        idx===0?inv.invno:'',
+        idx===0?(inv.date?inv.date.split('-').reverse().join('/'):''):'',
+        idx===0?inv.cname:'',
+        idx===0?(inv.cgst||''):'',
+        it.desc,
+        it.amt
+      ]);
+    });
+    // Tax rows
+    inv.taxes.forEach(t=>{
+      detailRows.push(['','','','',t.name+(t.type==='%'?' @ '+t.rate+'%':''),t.amt]);
+    });
+    // Grand total row per invoice
+    detailRows.push(['','','','','Grand Total',inv.grand]);
+    detailRows.push([]); // blank separator
+  });
+
+  const ws2=XLSX.utils.aoa_to_sheet(detailRows);
+  ws2['!cols']=[{wch:12},{wch:12},{wch:36},{wch:20},{wch:48},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Line Items');
+
+  // ── Download ──────────────────────────────────────
+  const today=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'DPG_Invoice_Summary_'+today+'.xlsx');
+  toast('Excel file downloaded ✓');
+}
+
+/* ══════════════════════════════════════════════
+   GOOGLE DRIVE SYNC
+══════════════════════════════════════════════ */
+const CLIENT_ID='593095396420-li13el6dun7qpddu01suevt7rlqn3ih2.apps.googleusercontent.com';
+const HOSTED_ORIGIN='https://dhrumilganna-ux.github.io';
+const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILENAME='dpg_invoices_data.json';
+
+let tokenClient=null;
+let accessToken=null;
+let driveFileId=null;
+let syncPending=false;
+let syncTimer=null;
+
+/* ── UI helpers ── */
+function setSyncBar(pct,done){
+  const bar=document.getElementById('sync-bar');
+  bar.style.width=pct+'%';
+  bar.classList.add('active');
+  if(done) setTimeout(()=>{bar.classList.remove('active');bar.style.width='0';},600);
+}
+function setDriveStatus(state,text){
+  const dot=document.getElementById('drive-dot');
+  const txt=document.getElementById('drive-status-txt');
+  dot.className='drive-dot'+(state==='connected'?' connected':state==='syncing'?' syncing':'');
+  txt.textContent=text;
+}
+function showSignedIn(email){
+  document.getElementById('drive-signin-btn').style.display='none';
+  const si=document.getElementById('drive-signed-in');
+  si.style.display='flex';
+  document.getElementById('drive-user').textContent=email;
+}
+function showSignedOut(){
+  document.getElementById('drive-signin-btn').style.display='flex';
+  document.getElementById('drive-signed-in').style.display='none';
+  setDriveStatus('','Not connected');
+  accessToken=null;driveFileId=null;
+}
+
+/* ── Init Google API ── */
+function initGoogleApi(){
+  gapi.load('client',async()=>{
+    await gapi.client.init({});
+    // Check if we have a stored token
+    const stored=sessionStorage.getItem('dpg_gtoken');
+    if(stored){
+      try{
+        const t=JSON.parse(stored);
+        if(t.expires_at>Date.now()){
+          accessToken=t.access_token;
+          gapi.client.setToken({access_token:accessToken});
+          showSignedIn(t.email||'');
+          setDriveStatus('connected','Drive connected');
+          await driveFindOrCreateFile();
+          await driveLoad();
+          return;
+        }
+      }catch(e){}
+    }
+    setupTokenClient();
+  });
+}
+
+function setupTokenClient(){
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,
+    scope:SCOPES,
+    ux_mode:'popup',
+    callback:(resp)=>{
+      if(resp.error){toast('Google sign-in failed: '+resp.error);showSignedOut();return;}
+      accessToken=resp.access_token;
+      gapi.client.setToken({access_token:accessToken});
+      // Get user info
+      fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+accessToken}})
+        .then(r=>r.json()).then(async info=>{
+          const email=info.email||'';
+          sessionStorage.setItem('dpg_gtoken',JSON.stringify({
+            access_token:accessToken,
+            email,
+            expires_at:Date.now()+3500000
+          }));
+          showSignedIn(email);
+          setDriveStatus('syncing','Connecting…');
+          setSyncBar(20);
+          await driveFindOrCreateFile();
+          setSyncBar(60);
+          await driveLoad();
+          setSyncBar(100,true);
+        }).catch(()=>{showSignedIn('');});
+    }
+  });
+}
+
+function driveSignIn(){
+  if(!tokenClient){setupTokenClient();}
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+
+function driveSignOut(){
+  if(accessToken) google.accounts.oauth2.revoke(accessToken);
+  sessionStorage.removeItem('dpg_gtoken');
+  showSignedOut();
+  toast('Signed out of Google Drive');
+}
+
+/* ── Find or create the data file in Drive appDataFolder ── */
+async function driveFindOrCreateFile(){
+  try{
+    // Search in appDataFolder first, then root
+    let res=await gapi.client.request({
+      path:'https://www.googleapis.com/drive/v3/files',
+      params:{spaces:'appDataFolder',q:`name='${DRIVE_FILENAME}'`,fields:'files(id,name)'}
+    });
+    const files=res.result.files||[];
+    if(files.length){
+      driveFileId=files[0].id;
+      setDriveStatus('connected','Drive connected');
+      return;
+    }
+    // Also try root drive
+    res=await gapi.client.request({
+      path:'https://www.googleapis.com/drive/v3/files',
+      params:{q:`name='${DRIVE_FILENAME}' and trashed=false`,fields:'files(id,name)'}
+    });
+    const rootFiles=res.result.files||[];
+    if(rootFiles.length){
+      driveFileId=rootFiles[0].id;
+      setDriveStatus('connected','Drive connected');
+      return;
+    }
+    // Create new file in root Drive (visible to user)
+    const meta={name:DRIVE_FILENAME,mimeType:'application/json',
+      description:'DPG Advisors Invoice Manager data file — do not delete'};
+    const createRes=await gapi.client.request({
+      path:'https://www.googleapis.com/drive/v3/files',
+      method:'POST',body:JSON.stringify(meta),
+      headers:{'Content-Type':'application/json'}
+    });
+    driveFileId=createRes.result.id;
+    setDriveStatus('connected','Drive connected (new file created)');
+  }catch(e){
+    setDriveStatus('','Connection error');
+    toast('Drive connection error: '+e.message);
+  }
+}
+
+/* ── Load data from Drive ── */
+async function driveLoad(){
+  if(!driveFileId||!accessToken)return;
+  setDriveStatus('syncing','Loading from Drive…');
+  try{
+    const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{
+      headers:{Authorization:'Bearer '+accessToken}
+    });
+    if(!res.ok){
+      if(res.status===404){driveFileId=null;await driveFindOrCreateFile();return;}
+      throw new Error('HTTP '+res.status);
+    }
+    const text=await res.text();
+    if(!text.trim()){setDriveStatus('connected','Drive connected (empty)');return;}
+    const data=JSON.parse(text);
+    // Merge: Drive is source of truth — replace local
+    if(data.invoices&&Array.isArray(data.invoices)){
+      invoices=data.invoices;
+      lsSave(LS_KEY,invoices);
+    }
+    if(data.customerDB&&Array.isArray(data.customerDB)){
+      customerDB=data.customerDB;
+      saveCustomerDB();
+    }
+    if(data.firm) lsSave(LS_FIRM,data.firm);
+    // Refresh UI
+    updateBadge();updateCustBadge();
+    // Re-init form with loaded data
+    if(invoices.length){
+      const last=invoices[invoices.length-1];
+      document.getElementById('c-name').value=last.cname||'';
+      document.getElementById('c-addr').value=last.caddr||'';
+      document.getElementById('c-gst').value=last.cgst||'';
+      document.getElementById('c-state').value=last.cstate||'Maharashtra';
+      document.getElementById('c-code').value=last.ccode||'27';
+      document.getElementById('item-rows').innerHTML='';
+      document.getElementById('tax-rows').innerHTML='';
+      last.items.forEach(it=>addItem(it.desc,it.amt));
+      last.taxes.forEach(t=>addTax(t.name,t.rate,t.type));
+      document.getElementById('f-invno').value='';
+      recalc();
+    }
+    setDriveStatus('connected','Synced · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+    toast('Loaded '+invoices.length+' invoices from Google Drive ✓');
+  }catch(e){
+    setDriveStatus('connected','Load error — using local data');
+    toast('Could not load from Drive: '+e.message);
+  }
+}
+
+/* ── Save data to Drive ── */
+async function driveSave(){
+  if(!driveFileId||!accessToken)return;
+  setDriveStatus('syncing','Saving to Drive…');
+  setSyncBar(30);
+  try{
+    const payload=JSON.stringify({
+      version:2,savedAt:new Date().toISOString(),
+      invoices,customerDB,firm:lsLoad(LS_FIRM)
+    });
+    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,{
+      method:'PATCH',
+      headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
+      body:payload
+    });
+    setSyncBar(100,true);
+    setDriveStatus('connected','Synced · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){
+    setSyncBar(0,true);
+    setDriveStatus('connected','Save error — data in local storage');
+    toast('Drive save error: '+e.message);
+  }
+}
+
+/* Debounced auto-save: triggers 2s after any data change */
+function scheduleSync(){
+  if(!accessToken)return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>driveSave(),2000);
+}
+
+function driveSyncNow(){
+  clearTimeout(syncTimer);
+  driveSave().then(()=>toast('Synced to Google Drive ✓'));
+}
+
+/* ── Init Google API when scripts load ── */
+window.addEventListener('load',()=>{
+  function tryInit(){
+    if(window.gapi&&window.google?.accounts?.oauth2){initGoogleApi();}
+    else setTimeout(tryInit,300);
+  }
+  tryInit();
+});
+
+/* ── Hook scheduleSync into save points ── */
+const _origLsSave=lsSave;
+// Patch saveInvoices and saveCustomerDB to also schedule Drive sync
+function saveInvoicesAndSync(){
+  lsSave(LS_KEY,invoices);
+  scheduleSync();
+}
+
+/* ── Init ── */
+(function(){
+  // Restore firm defaults
+  const firm=lsLoad(LS_FIRM);
+  if(firm){
+    ['firm','addr','state','code','email','pan','gst'].forEach(k=>{
+      const el=document.getElementById('f-'+k);if(el&&firm[k])el.value=firm[k];
+    });
+    if(firm.bank)document.getElementById('b-name').value=firm.bank;
+    if(firm.acc)document.getElementById('b-acc').value=firm.acc;
+    if(firm.ifsc)document.getElementById('b-ifsc').value=firm.ifsc;
+    if(firm.terms)document.getElementById('f-terms').value=firm.terms;
+  }
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+
+  if(invoices.length){
+    // Restore last invoice's client + items into form (for quick re-use)
+    const last=invoices[invoices.length-1];
+    document.getElementById('c-name').value=last.cname;
+    document.getElementById('c-addr').value=last.caddr;
+    document.getElementById('c-gst').value=last.cgst;
+    document.getElementById('c-state').value=last.cstate;
+    document.getElementById('c-code').value=last.ccode;
+    last.items.forEach(it=>addItem(it.desc,it.amt));
+    last.taxes.forEach(t=>addTax(t.name,t.rate,t.type));
+    // Leave invno blank so user assigns new number
+    document.getElementById('f-invno').value='';
+  } else {
+    // First run — PI 8 defaults
+    addItem('Fees for Transfer Pricing Assessment for AY 2020-21 and AY 2022-23',100000);
+    addItem('Fees for handling Income Tax Assessment for AY 2022-23',100000);
+    addItem('Fees for filing CIT Appeal for AY 2022-23 and SY 2017-18',100000);
+    addItem('Fees for Management Support Services',1000000);
+    addTax('CGST',9,'%');addTax('SGST',9,'%');
+    document.getElementById('f-invno').value='PI 8';
+    document.getElementById('f-date').value='2026-04-08';
+  }
+  updateBadge();updateCustBadge();recalc();
+})();
+</script>
+</body>
+</html>
